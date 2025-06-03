@@ -38,8 +38,8 @@ from idaes.core.util.misc import add_object_reference
 _log = logging.getLogger(__name__)
 
 
-@declare_process_block_class("CH4CombReactionParameterBlock")
-class CH4CombReactionParameterData(ReactionParameterBlock):
+@declare_process_block_class("HDAReactionParameterBlock")
+class HDAReactionParameterData(ReactionParameterBlock):
     """
     Property Parameter Block Class
     Contains parameters and indexing sets associated with properties for
@@ -50,52 +50,46 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
         '''
         Callable method for Block construction.
         '''
-        super(CH4CombReactionParameterData, self).build()
+        super(HDAReactionParameterData, self).build()
 
-        self._reaction_block_class = CH4ReactionBlock
+        self._reaction_block_class = HDAReactionBlock
 
         # List of valid phases in property package
         self.phase_list = Set(initialize=['Vap'])
 
         # Component list - a list of component identifiers
-        self.component_list = Set(initialize=['H2O',
-                                              'CO2',
-                                              'CH4',
-                                              'O2'])
+        self.component_list = Set(initialize=['benzene',
+                                              'toluene',
+                                              'hydrogen',
+                                              'methane'])
 
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1"])
 
         # Reaction Stoichiometry
-        self.rate_reaction_stoichiometry = {("R1", "Vap", "H2O"): 2,
-                                            ("R1", "Vap", "CO2"): 1,
-                                            ("R1", "Vap", "CH4"): -1,
-                                            ("R1", "Vap", "O2"): -2,
-                                            ("R1", "Liq", "CO2"): 0,
-                                            ("R1", "Liq", "CH4"): 0,
-                                            ("R1", "Liq", "H2O"): 0,
-                                            ("R1", "Liq", "O2"): 0}
+        self.rate_reaction_stoichiometry = {("R1", "Vap", "benzene"): 1,
+                                            ("R1", "Vap", "toluene"): -1,
+                                            ("R1", "Vap", "hydrogen"): -1,
+                                            ("R1", "Vap", "methane"): 1,
+                                            ("R1", "Liq", "benzene"): 0,
+                                            ("R1", "Liq", "toluene"): 0,
+                                            ("R1", "Liq", "hydrogen"): 0,
+                                            ("R1", "Liq", "methane"): 0}
 
         # Arrhenius Constant
-        self.arrhenius = Var(initialize=9.90E+08,
-                             units=pyunits.mol*pyunits.m**-3*pyunits.s**-1,
+        self.arrhenius = Var(initialize=6.3e+10,
+                             units=pyunits.mol*pyunits.m**-3*pyunits.s**-1*pyunits.Pa**-1,
                              doc="Arrhenius pre-exponential factor")
         self.arrhenius.fix()
 
         # Activation Energy
-        self.energy_activation = Var(initialize=185476,
+        self.energy_activation = Var(initialize=217.6e3,
                                      units=pyunits.J/pyunits.mol,
                                      doc="Activation energy")
         self.energy_activation.fix()
 
-        self.reaction_order={"CH4":1.73,
-                            "O2":1.13}
-        
-        self.reactant_list=Set(initialize=["CH4","O2"])
-
         # Heat of Reaction
-        #engineering toolbox
-        dh_rxn_dict = {"R1": -50000}
+        dh_rxn_dict = {"R1": -1.08e5}
         self.dh_rxn = Param(self.rate_reaction_idx,
                             initialize=dh_rxn_dict,
                             units=pyunits.J/pyunits.mol,
@@ -133,9 +127,9 @@ class ReactionBlock(ReactionBlockBase):
             _log.info('{} Initialization Complete.'.format(blk.name))
 
 
-@declare_process_block_class("CH4ReactionBlock",
+@declare_process_block_class("HDAReactionBlock",
                              block_class=ReactionBlock)
-class CH4ReactionBlockData(ReactionBlockDataBase):
+class HDAReactionBlockData(ReactionBlockDataBase):
     """
     An example reaction package for saponification of ethyl acetate
     """
@@ -144,7 +138,7 @@ class CH4ReactionBlockData(ReactionBlockDataBase):
         """
         Callable method for Block construction
         """
-        super(CH4ReactionBlockData, self).build()
+        super(HDAReactionBlockData, self).build()
 
         # Heat of reaction - no _ref as this is the actual property
         add_object_reference(
@@ -152,10 +146,8 @@ class CH4ReactionBlockData(ReactionBlockDataBase):
                 "dh_rxn",
                 self.config.parameters.dh_rxn)
 
-        self.k_rxn = Var(self.params.rate_reaction_idx, 
-            initialize={
-            "R1":0.2},
-            units=pyunits.mol*pyunits.m**-3*pyunits.s**-1)
+        self.k_rxn = Var(initialize=0.2,
+                         units=pyunits.mol*pyunits.m**-3*pyunits.s**-1*pyunits.Pa**-1)
 
         self.reaction_rate = Var(self.params.rate_reaction_idx,
                                  initialize=1,
@@ -167,20 +159,10 @@ class CH4ReactionBlockData(ReactionBlockDataBase):
                 -self.params.energy_activation /
                 (const.gas_constant*self.state_ref.temperature)))
 
-
-        self.Constraint(self.params.rate_reaction_idx)
-        def rate_expression(m,reaction_rate):
-            if reaction_rate == "R1":
-                return (self.reaction_rate["R1"] ==
-                    self.k_rxn["R1"] *
-                    (self.state_ref.mole_frac_phase_comp["Vap", "CH4"]**self.reaction_order["CH4"])
-                    *
-                    (self.state_ref.mole_frac_phase_comp["Vap","O2"]) ** self.reaction_order["O2"]
-                )
-
-
-        
- 
+        self.rate_expression = Constraint(
+            expr=self.reaction_rate["R1"] ==
+            self.k_rxn * self.state_ref.pressure *
+            self.state_ref.mole_frac_phase_comp["Vap", "toluene"])
 
     def get_reaction_rate_basis(b):
         return MaterialFlowBasis.molar
