@@ -206,7 +206,6 @@ configuration = {
                     "G": (226.4168, pyunits.J / pyunits.mol /pyunits.K),
                     "H": (0, pyunits.kJ / pyunits.mol)
                 },
-                
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
             },
         },
@@ -228,8 +227,8 @@ configuration = {
 "state_definition": FTPx,
 "state_bounds": {
     "flow_mol": (0, 100, 1000, pyunits.mol / pyunits.s),
-    "temperature": (273.15, 300, 450, pyunits.K),
-    "pressure": (5e4, 1e5, 1e6, pyunits.Pa),
+    "temperature": (273.15, 300, 1200, pyunits.K),
+    "pressure": (5e3, 1e5, 1e6, pyunits.Pa),
 },
 "pressure_ref": (1e5, pyunits.Pa),
 "temperature_ref": (300, pyunits.K),

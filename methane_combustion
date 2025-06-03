@@ -45,41 +45,26 @@ m.fs.reaction_params = CH4CombReactionParameterBlock(
     property_package=m.fs.methane_properties
 )
 
-m.fs.R101 = StoichiometricReactor(
-    property_package=m.fs.methane_properties,
-    reaction_package=m.fs.reaction_params,
-    has_heat_of_reaction=True,
-    has_heat_transfer=True,
-    has_pressure_change=False,
-)
+
 
 m.fs.state_block = m.fs.methane_properties.build_state_block(has_phase_equilibrium=False)
 
 m.fs.state_block.flow_mol.fix(1)
-m.fs.state_block.temperature.fix(1100)
-m.fs.state_block.pressure.fix(10000)
-'''
-m.fs.state_block.mole_frac_comp["H2"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["N2"].fix(3.76/6.76)
-m.fs.state_block.mole_frac_comp["O2"].fix(2/6.76)
-m.fs.state_block.mole_frac_comp["CH4"].fix(1/6.76)
-m.fs.state_block.mole_frac_comp["CO"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["CO2"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["H2O"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["NH3"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["NH3"].unfix()
-'''
-m.fs.state_block.mole_frac_comp["H2"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["N2"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["O2"].fix(2/3)
-m.fs.state_block.mole_frac_comp["CH4"].fix(1/3)
-m.fs.state_block.mole_frac_comp["CO"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["CO2"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["H2O"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["NH3"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["NH3"].unfix()
+m.fs.state_block.temperature.fix(300)
+m.fs.state_block.pressure.fix(100000)
 
-m.fs.reaction_block = 
+#m.fs.state_block.mole_frac_comp["H2"].fix(1e-5)
+m.fs.state_block.mole_frac_comp["N2"].fix(0.5)
+m.fs.state_block.mole_frac_comp["O2"].fix(0.2)
+m.fs.state_block.mole_frac_comp["CH4"].fix(0.2)
+#m.fs.state_block.mole_frac_comp["CO"].fix(1e-5)
+m.fs.state_block.mole_frac_comp["CO2"].fix(0.08)
+m.fs.state_block.mole_frac_comp["H2O"].unfix()
+#m.fs.state_block.mole_frac_comp["NH3"].fix(1e-5)
+#m.fs.state_block.mole_frac_comp["NH3"].unfix()
+
+#m.fs.reaction_block = m.fs.reaction_params.build_reaction_block(has_equilibrium=False,state_block=m.fs.state_block)
+
 from idaes.core.util.model_statistics import degrees_of_freedom
 print(degrees_of_freedom(m))
 m.fs.state_block.initialize()

@@ -162,10 +162,10 @@ class CH4ReactionBlockData(ReactionBlockDataBase):
                                  units=pyunits.mol/pyunits.m**3/pyunits.s)
 
         self.arrhenus_equation = Constraint(
-            expr=self.k_rxn ==
+            expr=(self.k_rxn["R1"] ==
             self.params.arrhenius * exp(
                 -self.params.energy_activation /
-                (const.gas_constant*self.state_ref.temperature)))
+                (const.gas_constant*self.state_ref.temperature))))
 
 
         self.Constraint(self.params.rate_reaction_idx)
