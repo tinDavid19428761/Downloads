@@ -156,11 +156,11 @@ class CH4ReactionBlockData(ReactionBlockDataBase):
             initialize={
             "R1":0.2},
             units=pyunits.mol*pyunits.m**-3*pyunits.s**-1)
-
+        
         self.reaction_rate = Var(self.params.rate_reaction_idx,
                                  initialize=1,
                                  units=pyunits.mol/pyunits.m**3/pyunits.s)
-
+        
         self.arrhenus_equation = Constraint(
             expr=(self.k_rxn["R1"] ==
             self.params.arrhenius * exp(
@@ -168,15 +168,16 @@ class CH4ReactionBlockData(ReactionBlockDataBase):
                 (const.gas_constant*self.state_ref.temperature))))
 
 
-        self.Constraint(self.params.rate_reaction_idx)
+        @self.Constraint(self.params.rate_reaction_idx)
         def rate_expression(m,reaction_rate):
             if reaction_rate == "R1":
                 return (self.reaction_rate["R1"] ==
                     self.k_rxn["R1"] *
-                    (self.state_ref.mole_frac_phase_comp["Vap", "CH4"]**self.reaction_order["CH4"])
+                    (self.state_ref.mole_frac_phase_comp["Vap", "CH4"]**self.params.reaction_order["CH4"])
                     *
-                    (self.state_ref.mole_frac_phase_comp["Vap","O2"]) ** self.reaction_order["O2"]
+                    (self.state_ref.mole_frac_phase_comp["Vap","O2"]) ** self.params.reaction_order["O2"]
                 )
+    
 
 
         

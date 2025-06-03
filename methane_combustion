@@ -63,7 +63,7 @@ m.fs.state_block.mole_frac_comp["H2O"].unfix()
 #m.fs.state_block.mole_frac_comp["NH3"].fix(1e-5)
 #m.fs.state_block.mole_frac_comp["NH3"].unfix()
 
-#m.fs.reaction_block = m.fs.reaction_params.build_reaction_block(has_equilibrium=False,state_block=m.fs.state_block)
+m.fs.reaction_block = m.fs.reaction_params.build_reaction_block(has_equilibrium=False,state_block=m.fs.state_block)
 
 from idaes.core.util.model_statistics import degrees_of_freedom
 print(degrees_of_freedom(m))
@@ -74,6 +74,6 @@ status=solver.solve(m,tee=True)
 
 m.fs.state_block.display()
 
-
+m.fs.reaction_block.display()
 
 
