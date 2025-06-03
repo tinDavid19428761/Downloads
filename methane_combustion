@@ -50,8 +50,8 @@ m.fs.reaction_params = CH4CombReactionParameterBlock(
 m.fs.state_block = m.fs.methane_properties.build_state_block(has_phase_equilibrium=False)
 
 m.fs.state_block.flow_mol.fix(1)
-m.fs.state_block.temperature.fix(300)
-m.fs.state_block.pressure.fix(100000)
+m.fs.state_block.temperature.fix(1100)
+m.fs.state_block.pressure.fix(10000)
 
 #m.fs.state_block.mole_frac_comp["H2"].fix(1e-5)
 m.fs.state_block.mole_frac_comp["N2"].fix(0.5)

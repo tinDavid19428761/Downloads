@@ -121,25 +121,13 @@ configuration = {
         "H2O": {
            "type": Component,
            "elemental_composition":{"H":2,"O":1},
-           "dens_mol_liq_comp": Perrys,
-           "enth_mol_liq_comp": Perrys,
            "enth_mol_ig_comp": NIST,
            "pressure_sat_comp": NIST,
-           "phase_equilibrium_form": {("Vap", "Liq"): fugacity},
+           'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
                "mw": (18.0153e-3, pyunits.kg / pyunits.mol),  # [4]
                "pressure_crit": (220.64e5, pyunits.Pa),  # [4]
                "temperature_crit": (647, pyunits.K),  # [4]
-               "dens_mol_liq_comp_coeff": {
-                   "eqn_type": 1,
-                   "1": (
-                       5.459,
-                       pyunits.kmol * pyunits.m**-3,
-                   ),  # [2] pg. 2-98, temperature range 273.16 K - 333.15 K
-                   "2": (0.30542, None),
-                   "3": (647.13, pyunits.K),
-                   "4": (0.081, None),
-               },
                "cp_mol_ig_comp_coeff": {
                    "A": (
                        30.09200,
@@ -165,20 +153,6 @@ configuration = {
                    "G": (223.3967, pyunits.J / pyunits.mol / pyunits.K),
                    "H": (0, pyunits.kJ / pyunits.mol),
                },
-               "cp_mol_liq_comp_coeff": {
-                   "1": (
-                       2.7637e5,
-                       pyunits.J / pyunits.kmol / pyunits.K,
-                   ),  # [2] pg 2-174, temperature range 273.16 K - 533.15 K
-                   "2": (-2.0901e3, pyunits.J / pyunits.kmol / pyunits.K**2),
-                   "3": (8.125, pyunits.J / pyunits.kmol / pyunits.K**3),
-                   "4": (-1.4116e-2, pyunits.J / pyunits.kmol / pyunits.K**4),
-                   "5": (9.3701e-6, pyunits.J / pyunits.kmol / pyunits.K**5),
-               },
-               "enth_mol_form_liq_comp_ref": (
-                   -285.83e3,
-                   pyunits.J / pyunits.mol,
-               ),  # [4]
                "enth_mol_form_vap_comp_ref": (-241.83, pyunits.J / pyunits.mol),  # [4]
                "pressure_sat_comp_coeff": {
                    "A": (4.6543, None),  # [4], temperature range 255.9 K - 373 K
@@ -212,7 +186,6 @@ configuration = {
     },
     # Specifying phases
 "phases": {
-    "Liq": {"type": LiquidPhase, "equation_of_state": Ideal},
     "Vap": {"type": VaporPhase, "equation_of_state": Ideal},
 },
 # Set base units of measurement
@@ -232,8 +205,5 @@ configuration = {
 },
 "pressure_ref": (1e5, pyunits.Pa),
 "temperature_ref": (300, pyunits.K),
-# Defining phase equilibria
-"phases_in_equilibrium": [("Vap", "Liq")],
-"phase_equilibrium_state": {("Vap", "Liq"): SmoothVLE},
-"bubble_dew_method": IdealBubbleDew,
+
 }
