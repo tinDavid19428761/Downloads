@@ -71,10 +71,12 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "CO2"): 1,
                                             ("R1", "Vap", "CH4"): -1,
                                             ("R1", "Vap", "O2"): -2,
+                                            ("R1", "Vap", "N2"): 0,
                                             ("R1", "Liq", "CO2"): 0,
                                             ("R1", "Liq", "CH4"): 0,
                                             ("R1", "Liq", "H2O"): 0,
-                                            ("R1", "Liq", "O2"): 0}
+                                            ("R1", "Liq", "O2"): 0,
+                                            ("R1", "Liq", "N2"): 0}
 
         # Arrhenius Constant
         self.arrhenius = Var(initialize=9.90E+08,

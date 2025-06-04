@@ -22,6 +22,7 @@ from idaes.models.unit_models import (
 PressureChanger,
 Mixer,
 StoichiometricReactor,
+Separator,
 Flash
 )
 
@@ -47,33 +48,86 @@ m.fs.reaction_params = CH4CombReactionParameterBlock(
 
 
 
-m.fs.state_block = m.fs.methane_properties.build_state_block(has_phase_equilibrium=False)
+# m.fs.state_block = m.fs.methane_properties.build_state_block(has_phase_equilibrium=False)
 
-m.fs.state_block.flow_mol.fix(1)
-m.fs.state_block.temperature.fix(1100)
-m.fs.state_block.pressure.fix(10000)
+# m.fs.state_block.flow_mol.fix(1)
+# m.fs.state_block.temperature.fix(1100)
+# m.fs.state_block.pressure.fix(10000)
 
-#m.fs.state_block.mole_frac_comp["H2"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["N2"].fix(0.5)
-m.fs.state_block.mole_frac_comp["O2"].fix(0.2)
-m.fs.state_block.mole_frac_comp["CH4"].fix(0.2)
-#m.fs.state_block.mole_frac_comp["CO"].fix(1e-5)
-m.fs.state_block.mole_frac_comp["CO2"].fix(0.08)
-m.fs.state_block.mole_frac_comp["H2O"].unfix()
+
+# m.fs.state_block.mole_frac_comp["N2"].fix(0.5)
+# m.fs.state_block.mole_frac_comp["O2"].fix(0.3)
+# m.fs.state_block.mole_frac_comp["CH4"].fix(0.1)
+# m.fs.state_block.mole_frac_comp["CO2"].fix(0.08)
+# m.fs.state_block.mole_frac_comp["H2O"].unfix()
+
 #m.fs.state_block.mole_frac_comp["NH3"].fix(1e-5)
 #m.fs.state_block.mole_frac_comp["NH3"].unfix()
+#m.fs.state_block.mole_frac_comp["CO"].fix(1e-5)
+#m.fs.state_block.mole_frac_comp["H2"].fix(1e-5)
 
-m.fs.reaction_block = m.fs.reaction_params.build_reaction_block(has_equilibrium=False,state_block=m.fs.state_block)
+# m.fs.reaction_block = m.fs.reaction_params.build_reaction_block(has_equilibrium=False,state_block=m.fs.state_block)
 
 from idaes.core.util.model_statistics import degrees_of_freedom
+#m.fs.state_block.initialize()
+
+
+
+# creating reactor unit
+m.fs.M101 = Mixer(
+    property_package = m.fs.methane_properties,
+    inlet_list=["methane_feed"]
+)
+
+
+m.fs.R101 = StoichiometricReactor(
+    property_package = m.fs.methane_properties,
+    reaction_package = m.fs.reaction_params,
+    has_heat_of_reaction=True,
+    has_heat_transfer=False,
+    has_pressure_change=False,
+)
+
+# reactor flow sheet feed via mixer -> reactor -> product via separator
+
+m.fs.s01 = Arc(source=m.fs.M101.outlet,destination=m.fs.R101.inlet)
+
+TransformationFactory("network.expand_arcs").apply_to(m)
+
+m.fs.M101.methane_feed.mole_frac_comp[0,"N2"].fix(0.5)
+m.fs.M101.methane_feed.mole_frac_comp[0,"O2"].fix(0.3)
+m.fs.M101.methane_feed.mole_frac_comp[0,"CH4"].fix(0.1)
+m.fs.M101.methane_feed.mole_frac_comp[0,"CO2"].fix(0.08)
+m.fs.M101.methane_feed.mole_frac_comp[0,"H2O"].fix(0.02) 
+m.fs.M101.methane_feed.temperature.fix(1100)
+m.fs.M101.methane_feed.pressure.fix(10000)
+m.fs.M101.methane_feed.flow_mol.fix(100)
+
+
+# m.fs.R101.conversion = Var(initialize=0.75, bounds=(0, 1))
+
+# m.fs.R101.conv_constraint = Constraint(
+#     expr=m.fs.R101.conversion * m.fs.R101.inlet.mole_frac_comp[0,"CH4"]
+#     == (
+#         m.fs.R101.inlet.mole_frac_comp[0,"CH4"]
+#         - m.fs.R101.outlet.mole_frac_comp[0,"CH4"]
+#     )
+# )
+# # m.fs.R101.conversion.fix(0.75)
+
+m.fs.R101.rate_reaction_extent.fix(0.75)
+
 print(degrees_of_freedom(m))
-m.fs.state_block.initialize()
+
+m.fs.R101.initialize()
 
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
-m.fs.state_block.display()
 
-m.fs.reaction_block.display()
+m.fs.R101.display()
+
+print(degrees_of_freedom(m))
+
 
 
