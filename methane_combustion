@@ -101,7 +101,7 @@ m.fs.M101.methane_feed.mole_frac_comp[0,"CO2"].fix(0.08)
 m.fs.M101.methane_feed.mole_frac_comp[0,"H2O"].fix(0.02) 
 m.fs.M101.methane_feed.temperature.fix(1100)
 m.fs.M101.methane_feed.pressure.fix(10000)
-m.fs.M101.methane_feed.flow_mol.fix(100)
+m.fs.M101.methane_feed.flow_mol.fix(1) #sum of mole_frac_comps
 
 
 # m.fs.R101.conversion = Var(initialize=0.75, bounds=(0, 1))
@@ -113,9 +113,9 @@ m.fs.M101.methane_feed.flow_mol.fix(100)
 #         - m.fs.R101.outlet.mole_frac_comp[0,"CH4"]
 #     )
 # )
-# # m.fs.R101.conversion.fix(0.75)
+# m.fs.R101.conversion.fix(0.75)
 
-m.fs.R101.rate_reaction_extent.fix(0.75)
+m.fs.R101.rate_reaction_extent.fix(0.05) #absolute amount of CH4 conversion (not %)
 
 print(degrees_of_freedom(m))
 
