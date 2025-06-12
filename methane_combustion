@@ -119,7 +119,7 @@ m.fs.R101.extent_match = Constraint(
     m.fs.time, m.fs.R101.config.reaction_package.rate_reaction_idx,
     rule=extent_match_rule
 )
-
+#edit
 m.fs.R101.extent_R1[0.0].fix(extentCO2) 
 m.fs.R101.extent_R2[0.0].fix(extentCO) 
 m.fs.R101.outlet.temperature.fix(1100)
