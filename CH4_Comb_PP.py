@@ -151,9 +151,9 @@ configuration = {
                    ),
                    "F": (-250.8810, pyunits.kJ / pyunits.mol),
                    "G": (223.3967, pyunits.J / pyunits.mol / pyunits.K),
-                   "H": (0, pyunits.kJ / pyunits.mol),
+                   "H": (-241.83, pyunits.kJ / pyunits.mol),
                },
-               "enth_mol_form_vap_comp_ref": (-241.83, pyunits.J / pyunits.mol),  # [4]
+               "enth_mol_form_vap_comp_ref": (-241830, pyunits.J / pyunits.mol),  # [4]
                "pressure_sat_comp_coeff": {
                    "A": (4.6543, None),  # [4], temperature range 255.9 K - 373 K
                    "B": (1435.264, pyunits.K),
