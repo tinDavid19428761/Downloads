@@ -72,20 +72,39 @@ m.fs.s01 = Arc(source=m.fs.M101.outlet,destination=m.fs.R101.inlet)
 
 TransformationFactory("network.expand_arcs").apply_to(m)
 
-m.fs.M101.methane_feed.mole_frac_comp[0,"N2"].fix(0.2)
-m.fs.M101.methane_feed.mole_frac_comp[0,"O2"].fix(0.6)
-m.fs.M101.methane_feed.mole_frac_comp[0,"CH4"].fix(0.2)
+#input variables
+moleFracCH4=0.2
+moleFracO2=0.3
+moleFlowTotal=10
+
+m.fs.M101.methane_feed.mole_frac_comp[0,"N2"].fix(1-moleFracCH4-moleFracO2)
+m.fs.M101.methane_feed.mole_frac_comp[0,"O2"].fix(moleFracO2)
+m.fs.M101.methane_feed.mole_frac_comp[0,"CH4"].fix(moleFracCH4)
 m.fs.M101.methane_feed.mole_frac_comp[0,"CO2"].fix(0)
 m.fs.M101.methane_feed.mole_frac_comp[0,"H2O"].fix(0) 
 m.fs.M101.methane_feed.mole_frac_comp[0,"CO"].fix(0) 
 m.fs.M101.methane_feed.temperature.fix(1100)
 m.fs.M101.methane_feed.pressure.fix(10000)
-m.fs.M101.methane_feed.flow_mol.fix(10) #sum of mole_frac_comps
+m.fs.M101.methane_feed.flow_mol.fix(moleFlowTotal) #sum of mole_frac_comps
 
+completeness = float(input("\033[0;32mCompleteness of reaction (0.0-1.0): \033[0m"))
 
+# check sufficient O2 for given feed and spec completeness, then calc R1,R2 reaction extents
+def stoichExtents(fracCH4,fracO2,feedTot,complete): #returns extent_R1, extent_R2
+    flowCH4=fracCH4*feedTot
+    flowO2=fracO2*feedTot
+
+    if flowCH4*((complete*2)+((1-complete)*1.5))<=flowO2:
+        return complete*flowCH4, (1-complete)*flowCH4
+    else:
+        return complete*(flowO2/((complete*2)+((1-complete)*1.5))), (1-complete)*(flowO2/((complete*2)+((1-complete)*1.5)))
+
+extentCO2, extentCO = stoichExtents(moleFracCH4,moleFracO2,moleFlowTotal,completeness)
+
+# following ~20 lines of code courtesy of chatgpt
 # Add variables for extent of each reaction (mol/s)
-m.fs.R101.extent_R1 = Var(m.fs.time, initialize=1, units=pyunits.mol/pyunits.s)
-m.fs.R101.extent_R2 = Var(m.fs.time, initialize=1, units=pyunits.mol/pyunits.s)
+m.fs.R101.extent_R1 = Var(m.fs.time, initialize=extentCO2, units=pyunits.mol/pyunits.s)
+m.fs.R101.extent_R2 = Var(m.fs.time, initialize=extentCO, units=pyunits.mol/pyunits.s)
 
 # Override the default extent expressions
 def extent_match_rule(b, t, r):
@@ -101,8 +120,8 @@ m.fs.R101.extent_match = Constraint(
     rule=extent_match_rule
 )
 
-m.fs.R101.extent_R1[0.0].fix(1) 
-m.fs.R101.extent_R2[0.0].fix(1) 
+m.fs.R101.extent_R1[0.0].fix(extentCO2) 
+m.fs.R101.extent_R2[0.0].fix(extentCO) 
 m.fs.R101.outlet.temperature.fix(1100)
 
 print(degrees_of_freedom(m))
